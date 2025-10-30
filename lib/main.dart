@@ -15,17 +15,22 @@ import 'screens/profile_screen.dart';
 import 'screens/market_prices_screen.dart';
 import 'screens/irrigation_status_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final appState = AppState();
+  await appState.initializeApp();
+  runApp(MyApp(appState: appState));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AppState appState;
+
+  const MyApp({super.key, required this.appState});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AppState(),
+    return ChangeNotifierProvider.value(
+      value: appState,
       child: MaterialApp(
         title: 'AgroGen',
         theme: AppTheme.theme,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme.dart';
+import '../app_state.dart';
 
 class CropSuggestionScreen extends StatefulWidget {
   const CropSuggestionScreen({super.key});
@@ -12,6 +14,21 @@ class _CropSuggestionScreenState extends State<CropSuggestionScreen> {
   int _selectedFilter = 0; // 0: Best Match, 1: Profitability, 2: Water Usage
 
   final List<String> _filters = ['Best Match', 'Profitability', 'Water Usage'];
+
+  Color _getSuitabilityColor(String suitability) {
+    switch (suitability.toLowerCase()) {
+      case 'excellent suitability':
+        return const Color(0xFF2E7D32);
+      case 'good suitability':
+        return const Color(0xFFEF6C00);
+      case 'fair suitability':
+        return const Color(0xFFFF9800);
+      case 'poor suitability':
+        return const Color(0xFFF44336);
+      default:
+        return const Color(0xFF9E9E9E);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,44 +175,58 @@ class _CropSuggestionScreenState extends State<CropSuggestionScreen> {
 
             // Crop List
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: const [
-                  CropCard(
-                    name: 'Tomato',
-                    suitability: 'Excellent Suitability',
-                    matchPercentage: '95% Match',
-                    suitabilityColor: Color(0xFF2E7D32),
-                    imagePath: 'assets/unnamed.png', // Placeholder
-                    conditions: [
-                      '☀️ Full Sun',
-                      '💧 Low Water',
-                      '💰 High Profit',
-                    ],
-                    isCurrent: true,
-                  ),
-                  SizedBox(height: 16),
-                  CropCard(
-                    name: 'Corn',
-                    suitability: 'Good Suitability',
-                    matchPercentage: '88% Match',
-                    suitabilityColor: Color(0xFFEF6C00),
-                    imagePath: 'assets/unnamed.png', // Placeholder
-                    conditions: [
-                      '☀️ Full Sun',
-                      '💧 Medium Water',
-                      '💰 Medium Profit',
-                    ],
-                    isCurrent: false,
-                  ),
-                ],
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  if (appState.isLoadingCrops) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (appState.cropSuggestions == null ||
+                      appState.cropSuggestions!.isEmpty) {
+                    return const Center(
+                      child: Text('No crop suggestions available'),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: appState.cropSuggestions!.length,
+                    itemBuilder: (context, index) {
+                      final crop = appState.cropSuggestions![index];
+                      return Column(
+                        children: [
+                          CropCard(
+                            name: crop['name'] ?? 'Unknown Crop',
+                            suitability: crop['suitability'] ?? 'Unknown',
+                            matchPercentage:
+                                '${crop['match_percentage'] ?? 0}%',
+                            suitabilityColor: _getSuitabilityColor(
+                              crop['suitability'] ?? '',
+                            ),
+                            imagePath:
+                                crop['image_path'] ?? 'assets/unnamed.png',
+                            conditions: List<String>.from(
+                              crop['conditions'] ?? [],
+                            ),
+                            isCurrent: crop['is_current'] ?? false,
+                          ),
+                          if (index < appState.cropSuggestions!.length - 1)
+                            const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          final appState = Provider.of<AppState>(context, listen: false);
+          appState.fetchCropSuggestionsWithParams();
+        },
         backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.refresh),
         tooltip: 'New Report',
