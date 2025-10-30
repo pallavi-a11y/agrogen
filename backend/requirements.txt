@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+motor
+python-decouple
+pydantic
+bcrypt
+passlib[bcrypt]
+python-jose
+scikit-learn
+pandas
+numpy
