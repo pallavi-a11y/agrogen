@@ -41,6 +41,18 @@ dependencies:
   # For Google Fonts
   google_fonts: ^6.2.1
 
+  # HTTP client for API calls
+  http: ^1.2.2
+
+  # Shared preferences for local storage
+  shared_preferences: ^2.3.2
+
+  # Location services
+  geolocator: ^13.0.1
+
+  # Google Maps
+  google_maps_flutter: ^2.10.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme.dart';
+import '../app_state.dart';
+import '../services/location_service.dart';
+import 'map_selection_screen.dart';
 
 class FarmConfigurationScreen extends StatefulWidget {
   const FarmConfigurationScreen({super.key});
@@ -11,13 +15,139 @@ class FarmConfigurationScreen extends StatefulWidget {
 
 class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
   bool _useCurrentLocation = true;
+  bool _isLoadingLocation = false;
   final _farmNameController = TextEditingController(text: 'Green Valley Acres');
   final _latitudeController = TextEditingController(text: '37.7749');
   final _longitudeController = TextEditingController(text: '-122.4194');
   final _areaController = TextEditingController(text: '50');
+  final _nitrogenController = TextEditingController(text: '0.0');
+  final _phosphorusController = TextEditingController(text: '0.0');
+  final _potassiumController = TextEditingController(text: '0.0');
+  final _temperatureController = TextEditingController(text: '25.0');
+  final _humidityController = TextEditingController(text: '60.0');
+  final _phController = TextEditingController(text: '7.0');
+  final _soilMoistureController = TextEditingController(text: '30.0');
   final _soilTypeController = TextEditingController(text: 'Loamy');
   final _notesController = TextEditingController();
   String _unit = 'Acres';
+
+  final LocationService _locationService = LocationService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentFarmData();
+  }
+
+  void _loadCurrentFarmData() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    if (appState.farmConfig != null) {
+      _farmNameController.text = appState.farmConfig!['name'] ?? '';
+      _latitudeController.text =
+          appState.farmConfig!['latitude']?.toString() ?? '';
+      _longitudeController.text =
+          appState.farmConfig!['longitude']?.toString() ?? '';
+      _areaController.text = appState.farmConfig!['area']?.toString() ?? '';
+      _nitrogenController.text =
+          appState.farmConfig!['nitrogen']?.toString() ?? '';
+      _phosphorusController.text =
+          appState.farmConfig!['phosphorus']?.toString() ?? '';
+      _potassiumController.text =
+          appState.farmConfig!['potassium']?.toString() ?? '';
+      _temperatureController.text =
+          appState.farmConfig!['temperature']?.toString() ?? '';
+      _humidityController.text =
+          appState.farmConfig!['humidity']?.toString() ?? '';
+      _phController.text = appState.farmConfig!['ph']?.toString() ?? '';
+      _soilMoistureController.text =
+          appState.farmConfig!['soil_moisture']?.toString() ?? '';
+      _soilTypeController.text = appState.farmConfig!['soil_type'] ?? '';
+      _notesController.text = appState.farmConfig!['notes'] ?? '';
+      _unit = appState.farmConfig!['unit'] ?? 'Acres';
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() => _isLoadingLocation = true);
+
+    try {
+      final position = await _locationService.getCurrentPosition();
+      if (position != null) {
+        setState(() {
+          _latitudeController.text = position.latitude.toString();
+          _longitudeController.text = position.longitude.toString();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location updated successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to get current location')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting location: $e')));
+    } finally {
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _selectLocationOnMap() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => MapSelectionScreen(
+              initialLatitude: double.tryParse(_latitudeController.text),
+              initialLongitude: double.tryParse(_longitudeController.text),
+            ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _latitudeController.text = result['latitude'].toString();
+        _longitudeController.text = result['longitude'].toString();
+      });
+    }
+  }
+
+  Future<void> _saveFarmDetails() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+
+    final farmConfig = {
+      'name': _farmNameController.text,
+      'latitude': double.tryParse(_latitudeController.text),
+      'longitude': double.tryParse(_longitudeController.text),
+      'area': double.tryParse(_areaController.text),
+      'unit': _unit,
+      'nitrogen': double.tryParse(_nitrogenController.text),
+      'phosphorus': double.tryParse(_phosphorusController.text),
+      'potassium': double.tryParse(_potassiumController.text),
+      'temperature': double.tryParse(_temperatureController.text),
+      'humidity': double.tryParse(_humidityController.text),
+      'ph': double.tryParse(_phController.text),
+      'soil_moisture': double.tryParse(_soilMoistureController.text),
+      'soil_type': _soilTypeController.text,
+      'notes': _notesController.text,
+    };
+
+    try {
+      await appState.updateFarmConfig(farmConfig);
+      // Automatically fetch new crop suggestions after saving farm config
+      await appState.fetchCropSuggestionsWithParams();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Farm details saved successfully')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error saving farm details: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +190,7 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed:
-                          () => setState(() => _useCurrentLocation = true),
+                          _isLoadingLocation ? null : _getCurrentLocation,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             _useCurrentLocation
@@ -69,14 +199,25 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
                         foregroundColor:
                             _useCurrentLocation ? Colors.white : Colors.black,
                       ),
-                      child: const Text('Use Current Location'),
+                      child:
+                          _isLoadingLocation
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : const Text('Use Current Location'),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed:
-                          () => setState(() => _useCurrentLocation = false),
+                      onPressed: _selectLocationOnMap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             !_useCurrentLocation
@@ -161,6 +302,114 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
               ),
               const SizedBox(height: 20),
 
+              // Soil Parameters
+              const Text(
+                'Soil Parameters',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              // NPK Values
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _nitrogenController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nitrogen (N)',
+                        prefixIcon: Icon(Icons.science),
+                        suffixText: 'ppm',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _phosphorusController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phosphorus (P)',
+                        prefixIcon: Icon(Icons.science),
+                        suffixText: 'ppm',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _potassiumController,
+                      decoration: const InputDecoration(
+                        labelText: 'Potassium (K)',
+                        prefixIcon: Icon(Icons.science),
+                        suffixText: 'ppm',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Environmental Parameters
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _temperatureController,
+                      decoration: const InputDecoration(
+                        labelText: 'Temperature',
+                        prefixIcon: Icon(Icons.thermostat),
+                        suffixText: '°C',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _humidityController,
+                      decoration: const InputDecoration(
+                        labelText: 'Humidity',
+                        prefixIcon: Icon(Icons.water_drop),
+                        suffixText: '%',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // pH and Soil Moisture
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _phController,
+                      decoration: const InputDecoration(
+                        labelText: 'pH Level',
+                        prefixIcon: Icon(Icons.phonelink_setup),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _soilMoistureController,
+                      decoration: const InputDecoration(
+                        labelText: 'Soil Moisture',
+                        prefixIcon: Icon(Icons.opacity),
+                        suffixText: '%',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
               // Soil Type
               TextField(
                 controller: _soilTypeController,
@@ -184,7 +433,7 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
 
               // Save Button
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _saveFarmDetails,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
