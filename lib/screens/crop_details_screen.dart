@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 
 class CropDetailsScreen extends StatefulWidget {
   const CropDetailsScreen({super.key});
@@ -86,11 +85,11 @@ class _CropDetailsScreenState extends State<CropDetailsScreen> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton.icon(
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Crops'),
                     onPressed: () {
                       // TODO: Navigate to edit crops screen
                     },
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Crops'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFA7D49B),
                       foregroundColor: const Color(0xFF2E7D32),
@@ -152,6 +151,7 @@ class _CropDetailsScreenState extends State<CropDetailsScreen> {
                               fit: BoxFit.cover,
                             ),
                           ),
+                          child: const SizedBox.shrink(),
                         ),
                         const SizedBox(width: 16),
 
