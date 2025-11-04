@@ -46,7 +46,7 @@ class AppState extends ChangeNotifier {
 
   Future<bool> register(String name, String email, String password) async {
     try {
-      final response = await _apiService.register(name, email, password);
+      await _apiService.register(name, email, password);
       // After registration, might need OTP verification
       notifyListeners();
       return true;

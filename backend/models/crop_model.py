@@ -1,0 +1,32 @@
+from pydantic import BaseModel
+class CropInput(BaseModel):
+    nitrogen: float
+    phosphorus: float
+    potassium: float
+    temperature: float
+    humidity: float
+    ph: float
+    soil_moisture: float
+    name: str
+    unit: str
+    soil_type: str
+    notes: str
+    latitude: float
+    longitude: float
+    area: float
+
+class CropRequest(BaseModel):
+    nitrogen: float
+    phosphorus: float
+    potassium: float
+    ph: float
+    temperature: float
+    humidity: float
+    soil_moisture: float
+    name: str
+    unit: str
+    soil_type: str
+    notes: str
+    latitude: float
+    longitude: float
+    area: float
