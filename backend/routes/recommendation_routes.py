@@ -73,4 +73,8 @@ def recommend_crop(data: CropInput):
         }
 
     except Exception as e:
+<<<<<<< HEAD
         raise HTTPException(status_code=500, detail=str(e))
+=======
+        raise HTTPException(status_code=500, detail=str(e))
+>>>>>>> 05af77d070e3b35d2459faebf7750d1bb7310fbb

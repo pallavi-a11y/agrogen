@@ -4,12 +4,24 @@ from dotenv import load_dotenv
 from models.user_model import User
 from routes import user_routes, sensor_routes, recommendation_routes
 from routes.crop_routes import router as crop_router
+<<<<<<< HEAD
 from disease_routes import router as disease_router
+=======
+from fastapi.middleware.cors import CORSMiddleware
+>>>>>>> 05af77d070e3b35d2459faebf7750d1bb7310fbb
 import os
 
 load_dotenv()
 
 app = FastAPI()
+# Allow frontend connection
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For testing, allows all — later you can specify your Flutter app URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # MongoDB connection
 try:
@@ -18,7 +30,8 @@ try:
     db = client["smartfarm"]
     print("✅ MongoDB connected successfully!")
 except Exception as e:
-    print("❌ MongoDB connection failed:", e)
+    print("MongoDB connection failed:", e)
+
 
 @app.get("/api/health")
 def health_check():

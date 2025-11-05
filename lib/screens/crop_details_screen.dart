@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:provider/provider.dart';
 import '../theme.dart';
 import '../app_state.dart';
+=======
+>>>>>>> 05af77d070e3b35d2459faebf7750d1bb7310fbb
 
 class CropDetailsScreen extends StatefulWidget {
   const CropDetailsScreen({super.key});
@@ -187,11 +190,11 @@ class _CropDetailsScreenState extends State<CropDetailsScreen> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton.icon(
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Crops'),
                     onPressed: () {
                       _showEditCropsDialog(context);
                     },
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Crops'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFA7D49B),
                       foregroundColor: const Color(0xFF2E7D32),
@@ -221,6 +224,7 @@ class _CropDetailsScreenState extends State<CropDetailsScreen> {
 
             // Current Crops List
             Expanded(
+<<<<<<< HEAD
               child: Consumer<AppState>(
                 builder: (context, appState, child) {
                   final crops = appState.currentCrops;
@@ -240,6 +244,155 @@ class _CropDetailsScreenState extends State<CropDetailsScreen> {
                               color: Colors.black.withOpacity(0.05),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
+=======
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _currentCrops.length,
+                itemBuilder: (context, index) {
+                  final crop = _currentCrops[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Crop Image
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            image: DecorationImage(
+                              image: AssetImage(crop['image']),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          child: const SizedBox.shrink(),
+                        ),
+                        const SizedBox(width: 16),
+
+                        // Crop Details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                crop['name'],
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2D2C2A),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    size: 16,
+                                    color: Color(0xFF5F5E5C),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Planted: ${crop['plantedDate']}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF5F5E5C),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.square_foot,
+                                    size: 16,
+                                    color: Color(0xFF5F5E5C),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Area: ${crop['area']}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF5F5E5C),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    size: 16,
+                                    color: Color(0xFF5F5E5C),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Harvest: ${crop['expectedHarvest']}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF5F5E5C),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Status and Health
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    crop['health'] == 'Excellent'
+                                        ? const Color(
+                                          0xFF2E7D32,
+                                        ).withOpacity(0.1)
+                                        : const Color(
+                                          0xFF4CAF50,
+                                        ).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                crop['health'],
+                                style: TextStyle(
+                                  color:
+                                      crop['health'] == 'Excellent'
+                                          ? const Color(0xFF2E7D32)
+                                          : const Color(0xFF4CAF50),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              crop['status'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF5F5E5C),
+                                fontWeight: FontWeight.w500,
+                              ),
+>>>>>>> 05af77d070e3b35d2459faebf7750d1bb7310fbb
                             ),
                           ],
                         ),

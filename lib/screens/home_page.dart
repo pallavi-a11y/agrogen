@@ -4,7 +4,6 @@ import '../theme.dart';
 import '../app_state.dart';
 import '../l10n/app_localizations.dart';
 import 'profile_screen.dart';
-import 'crop_suggestion_screen.dart';
 import 'crop_details_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
