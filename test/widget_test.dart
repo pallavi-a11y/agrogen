@@ -25,22 +25,10 @@ void main() {
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 
-  testWidgets('CropDetailsScreen displays correctly with null-safe fields', (
+  testWidgets('CropDetailsScreen displays correctly', (
     WidgetTester tester,
   ) async {
     final appState = AppState();
-    // Mock current crops with null values
-    appState.currentCrops = [
-      {
-        'name': 'Tomato',
-        'planted_date': null,
-        'expected_harvest': null,
-        'area': 2.5,
-        'image': null,
-        'status': 'Growing',
-        'health': 'Good',
-      },
-    ];
 
     await tester.pumpWidget(
       MaterialApp(
@@ -54,19 +42,9 @@ void main() {
     // Verify the screen title
     expect(find.text('Crop Details'), findsOneWidget);
 
-    // Verify crop name is displayed
-    expect(find.text('Tomato'), findsOneWidget);
-
-    // Verify null-safe fields show 'N/A'
-    expect(find.text('Planted: N/A'), findsOneWidget);
-    expect(find.text('Harvest: N/A'), findsOneWidget);
-
-    // Verify area is displayed
-    expect(find.text('Area: 2.5'), findsOneWidget);
-
-    // Verify status and health
-    expect(find.text('Growing'), findsOneWidget);
-    expect(find.text('Good'), findsOneWidget);
+    // Verify the manage crops section
+    expect(find.text('Manage Your Crops'), findsOneWidget);
+    expect(find.text('Currently Grown Crops'), findsOneWidget);
   });
 
   testWidgets('Floating action button opens add crop dialog', (

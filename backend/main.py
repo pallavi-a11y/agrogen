@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from models.user_model import User
 from routes import user_routes, sensor_routes, recommendation_routes
 from routes.crop_routes import router as crop_router
+from disease_routes import router as disease_router
 import os
 
 load_dotenv()
@@ -32,3 +33,4 @@ app.include_router(user_routes.router)
 app.include_router(sensor_routes.router)
 app.include_router(recommendation_routes.router, prefix="/api")
 app.include_router(crop_router, prefix="/api/recommend")
+app.include_router(disease_router)

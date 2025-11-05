@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme.dart';
 import '../app_state.dart';
+import '../l10n/app_localizations.dart';
 import 'profile_screen.dart';
 import 'crop_suggestion_screen.dart';
 import 'crop_details_screen.dart';
@@ -34,15 +35,18 @@ class _HomeContentState extends State<HomeContent> {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _widgetOptions),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: const Icon(Icons.person),
+            label: AppLocalizations.of(context)!.profile,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.grass),
-            label: 'Crop Details',
+            icon: const Icon(Icons.dashboard),
+            label: AppLocalizations.of(context)!.dashboard,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.grass),
+            label: AppLocalizations.of(context)!.cropDetails,
           ),
         ],
         currentIndex: _selectedIndex,
@@ -192,7 +196,7 @@ class DashboardScreen extends StatelessWidget {
 
             // My Farm Card
             Text(
-              'My Farm',
+              AppLocalizations.of(context)!.myFarm,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -268,7 +272,7 @@ class DashboardScreen extends StatelessWidget {
                   const Icon(Icons.settings, size: 20, color: AppTheme.primary),
                   const SizedBox(width: 8),
                   Text(
-                    'Configure Farm',
+                    AppLocalizations.of(context)!.configureFarm,
                     style: TextStyle(
                       fontSize: 16,
                       color: AppTheme.primary,
@@ -295,8 +299,8 @@ class DashboardScreen extends StatelessWidget {
                 elevation: 2,
                 shadowColor: Colors.black.withOpacity(0.1),
               ),
-              child: const Text(
-                'Get Crop Suggestions',
+              child: Text(
+                AppLocalizations.of(context)!.getCropSuggestions,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -304,7 +308,7 @@ class DashboardScreen extends StatelessWidget {
 
             // Quick Links
             Text(
-              'Quick Links',
+              AppLocalizations.of(context)!.quickLinks,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -334,7 +338,7 @@ class DashboardScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Market Prices',
+                              AppLocalizations.of(context)!.marketPrices,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -352,7 +356,7 @@ class DashboardScreen extends StatelessWidget {
                   child: GestureDetector(
                     onTap:
                         () =>
-                            Navigator.pushNamed(context, '/irrigation_status'),
+                            Navigator.pushNamed(context, '/disease_detection'),
                     child: Card(
                       elevation: 2,
                       shadowColor: Colors.black.withOpacity(0.1),
@@ -364,13 +368,13 @@ class DashboardScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             Icon(
-                              Icons.water_drop,
+                              Icons.bug_report,
                               size: 36,
                               color: AppTheme.primary,
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Irrigation Status',
+                              AppLocalizations.of(context)!.diseaseDetection,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,

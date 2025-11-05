@@ -32,7 +32,7 @@ class AuthChoiceScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'AgriGen',
+                    'AgroGen',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: AppTheme.primaryBrown,
                       fontWeight: FontWeight.bold,

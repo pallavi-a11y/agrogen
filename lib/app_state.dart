@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/api_service.dart';
 
 class AppState extends ChangeNotifier {
   final ApiService _apiService = ApiService();
+
+  // Language settings
+  Locale _locale = const Locale('en');
+  Locale get locale => _locale;
 
   // User data
   String userName = 'John Doe';
@@ -20,10 +25,12 @@ class AppState extends ChangeNotifier {
   // Data
   Map<String, dynamic>? weatherData;
   List<Map<String, dynamic>>? cropSuggestions;
-  List<Map<String, dynamic>>? currentCrops;
+  List<Map<String, dynamic>> _currentCrops = [];
   List<Map<String, dynamic>>? marketPrices;
   Map<String, dynamic>? irrigationStatus;
   Map<String, dynamic>? farmConfig;
+
+  List<Map<String, dynamic>> get currentCrops => _currentCrops;
 
   // Error handling
   String? errorMessage;
@@ -140,7 +147,7 @@ class AppState extends ChangeNotifier {
     if (!isLoggedIn) return;
 
     try {
-      currentCrops = await _apiService.fetchCurrentCrops();
+      _currentCrops = await _apiService.fetchCurrentCrops();
       notifyListeners();
     } catch (e) {
       errorMessage = e.toString();
@@ -153,6 +160,20 @@ class AppState extends ChangeNotifier {
 
     try {
       await _apiService.addCrop(cropData);
+      await fetchCurrentCrops(); // Refresh the list
+      return true;
+    } catch (e) {
+      errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateCropStatus(String cropId, String status) async {
+    if (!isLoggedIn) return false;
+
+    try {
+      await _apiService.updateCropStatus(cropId, status);
       await fetchCurrentCrops(); // Refresh the list
       return true;
     } catch (e) {
@@ -264,8 +285,27 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // Language methods
+  void setLocale(Locale locale) {
+    _locale = locale;
+    _saveLocaleToPrefs(locale);
+    notifyListeners();
+  }
+
+  Future<void> _saveLocaleToPrefs(Locale locale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale.languageCode);
+  }
+
+  Future<void> loadLocaleFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final localeCode = prefs.getString('locale') ?? 'en';
+    _locale = Locale(localeCode);
+  }
+
   // Initialize app data
   Future<void> initializeApp() async {
+    await loadLocaleFromPrefs();
     // Check if user is logged in
     // For now, assume not logged in, but in real app check stored token
     if (isLoggedIn) {

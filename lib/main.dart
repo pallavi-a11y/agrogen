@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'app_state.dart';
 import 'screens/splash_screen.dart';
@@ -13,7 +15,7 @@ import 'screens/crop_details_screen.dart';
 import 'screens/farm_configuration_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/market_prices_screen.dart';
-import 'screens/irrigation_status_screen.dart';
+import 'screens/disease_detection_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,23 +33,38 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: appState,
-      child: MaterialApp(
-        title: 'AgroGen',
-        theme: AppTheme.theme,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const SplashScreen(),
-          '/auth_choice': (context) => const AuthChoiceScreen(),
-          '/login': (context) => const LoginPage(),
-          '/register': (context) => const RegisterPage(),
-          '/otp': (context) => const OTPScreen(),
-          '/home': (context) => const HomeContent(),
-          '/crop_suggestions': (context) => const CropSuggestionScreen(),
-          '/crop_details': (context) => const CropDetailsScreen(),
-          '/farm_config': (context) => const FarmConfigurationScreen(),
-          '/profile': (context) => const ProfileScreen(),
-          '/market_prices': (context) => const MarketPricesScreen(),
-          '/irrigation_status': (context) => const IrrigationStatusScreen(),
+      child: Consumer<AppState>(
+        builder: (context, appState, child) {
+          return MaterialApp(
+            title: 'AgroGen',
+            theme: AppTheme.theme,
+            locale: appState.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('hi'), // Hindi
+            ],
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const SplashScreen(),
+              '/auth_choice': (context) => const AuthChoiceScreen(),
+              '/login': (context) => const LoginPage(),
+              '/register': (context) => const RegisterPage(),
+              '/otp': (context) => const OTPScreen(),
+              '/home': (context) => const HomeContent(),
+              '/crop_suggestions': (context) => const CropSuggestionScreen(),
+              '/crop_details': (context) => const CropDetailsScreen(),
+              '/farm_config': (context) => const FarmConfigurationScreen(),
+              '/profile': (context) => const ProfileScreen(),
+              '/market_prices': (context) => const MarketPricesScreen(),
+              '/disease_detection': (context) => const DiseaseDetectionScreen(),
+            },
+          );
         },
       ),
     );

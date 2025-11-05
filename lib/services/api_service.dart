@@ -171,6 +171,15 @@ class ApiService {
     return await _post(Config.addCropEndpoint, cropData);
   }
 
+  Future<Map<String, dynamic>> updateCropStatus(
+    String cropId,
+    String status,
+  ) async {
+    return await _put('${Config.currentCropsEndpoint}/$cropId/status', {
+      'status': status,
+    });
+  }
+
   Future<Map<String, dynamic>> removeCrop(String cropId) async {
     return await _delete('${Config.removeCropEndpoint}/$cropId');
   }
@@ -201,6 +210,34 @@ class ApiService {
 
   Future<Map<String, dynamic>> fetchIrrigationStatus() async {
     return await _get(Config.irrigationStatusEndpoint);
+  }
+
+  // Disease detection method
+  Future<Map<String, dynamic>> detectDisease(String imagePath) async {
+    final token = await _getToken();
+    final headers = {if (token != null) 'Authorization': 'Bearer $token'};
+
+    final uri = Uri.parse('${Config.baseUrl}/api/disease-detection');
+    final request = http.MultipartRequest('POST', uri);
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // Add image file to request
+    final file = await http.MultipartFile.fromPath('file', imagePath);
+    request.files.add(file);
+
+    final response = await request.send().timeout(Config.apiTimeout);
+    final responseBody = await response.stream.bytesToString();
+
+    if (response.statusCode == 200) {
+      return json.decode(responseBody);
+    } else {
+      throw Exception(
+        'Failed to detect disease: ${response.statusCode} - $responseBody',
+      );
+    }
   }
 
   Future<Map<String, dynamic>> fetchFarmConfig() async {

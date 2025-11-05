@@ -1,10 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../theme.dart';
 import '../app_state.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  void _showLanguageDialog(BuildContext context, AppState appState) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.language),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(AppLocalizations.of(context)!.english),
+                leading: Radio<String>(
+                  value: 'en',
+                  groupValue: appState.locale.languageCode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      appState.setLocale(Locale(value));
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+              ListTile(
+                title: Text(AppLocalizations.of(context)!.hindi),
+                leading: Radio<String>(
+                  value: 'hi',
+                  groupValue: appState.locale.languageCode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      appState.setLocale(Locale(value));
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +98,7 @@ class ProfileScreen extends StatelessWidget {
 
             // Farm Information
             Text(
-              'Farm Information',
+              AppLocalizations.of(context)!.farmName,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.primaryBrown,
                 fontWeight: FontWeight.bold,
@@ -97,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
 
             // Settings
             Text(
-              'Settings',
+              AppLocalizations.of(context)!.settings,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.primaryBrown,
                 fontWeight: FontWeight.bold,
@@ -121,9 +164,15 @@ class ProfileScreen extends StatelessWidget {
                       Icons.language,
                       color: AppTheme.primaryBrown,
                     ),
-                    title: const Text('Language'),
-                    trailing: const Text('English'),
-                    onTap: () {},
+                    title: Text(AppLocalizations.of(context)!.language),
+                    trailing: Text(
+                      appState.locale.languageCode == 'en'
+                          ? AppLocalizations.of(context)!.english
+                          : AppLocalizations.of(context)!.hindi,
+                    ),
+                    onTap: () {
+                      _showLanguageDialog(context, appState);
+                    },
                   ),
                   const Divider(),
                   ListTile(
@@ -140,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
                       Icons.logout,
                       color: AppTheme.primaryBrown,
                     ),
-                    title: const Text('Logout'),
+                    title: Text(AppLocalizations.of(context)!.logout),
                     onTap: () {},
                   ),
                 ],
