@@ -5,6 +5,7 @@ import '../app_state.dart';
 import '../l10n/app_localizations.dart';
 import 'profile_screen.dart';
 import 'crop_details_screen.dart';
+import 'chatbot_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeContent extends StatefulWidget {
@@ -17,10 +18,11 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   int _selectedIndex = 1; // Default to Dashboard
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    ProfileScreen(),
-    DashboardScreen(),
-    CropDetailsScreen(),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const ProfileScreen(),
+    const DashboardScreen(),
+    const CropDetailsScreen(),
+    const ChatbotScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -47,9 +49,14 @@ class _HomeContentState extends State<HomeContent> {
             icon: const Icon(Icons.grass),
             label: AppLocalizations.of(context)!.cropDetails,
           ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.chat),
+            label: AppLocalizations.of(context)!.chatbot,
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: AppTheme.primaryBrown,
+        unselectedItemColor: AppTheme.primaryBrown,
         onTap: _onItemTapped,
       ),
     );

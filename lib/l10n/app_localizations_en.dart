@@ -129,4 +129,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get farmer => 'Farmer';
+
+  @override
+  String get chatbot => 'AgroBot';
 }

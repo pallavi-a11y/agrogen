@@ -40,5 +40,6 @@
   "cropDetails": "Crop Details",
   "notifications": "Notifications",
   "helpSupport": "Help & Support",
-  "farmer": "Farmer"
+  "farmer": "Farmer",
+  "chatbot": "AgroBot"
 }

@@ -10,9 +10,9 @@ class AppState extends ChangeNotifier {
   Locale get locale => _locale;
 
   // User data
-  String userName = 'John Doe';
-  String farmName = 'Green Valley Acres';
-  String location = 'California';
+  String userName = 'Ramesh Singh';
+  String farmName = 'Farm 1';
+  String location = 'Haryana';
   String? authToken;
   bool isLoggedIn = false;
 

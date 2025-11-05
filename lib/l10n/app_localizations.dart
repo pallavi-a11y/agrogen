@@ -342,6 +342,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Farmer'**
   String get farmer;
+
+  /// Chatbot title
+  ///
+  /// In en, this message translates to:
+  /// **'AgroBot'**
+  String get chatbot;
 }
 
 class _AppLocalizationsDelegate

@@ -53,6 +53,9 @@ dependencies:
   # Google Maps
   google_maps_flutter: ^2.10.0
 
+  # Permission handler for location permissions
+  permission_handler: ^11.3.1
+
   # Map integration
   flutter_map: ^7.0.0
   latlong2: ^0.9.0

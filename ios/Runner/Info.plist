@@ -51,5 +51,7 @@
 	<string>This app needs access to location to provide location-based services for farming.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to location to provide location-based services for farming.</string>
+	<key>GMSServicesException</key>
+	<string>0d7TVWGg01q6YZ9nHkVV</string>
 </dict>
 </plist>

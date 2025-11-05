@@ -14,9 +14,11 @@ import 'screens/home_page.dart';
 import 'screens/crop_suggestion_screen.dart';
 import 'screens/crop_details_screen.dart';
 import 'screens/farm_configuration_screen.dart';
+import 'screens/map_selection_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/market_prices_screen.dart';
 import 'screens/disease_detection_screen.dart';
+import 'screens/chatbot_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +67,7 @@ class MyApp extends StatelessWidget {
               '/profile': (context) => const ProfileScreen(),
               '/market_prices': (context) => const MarketPricesScreen(),
               '/disease_detection': (context) => const DiseaseDetectionScreen(),
+              '/chatbot': (context) => const ChatbotScreen(),
             },
           );
         },

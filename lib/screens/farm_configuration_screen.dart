@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../theme.dart';
 import '../app_state.dart';
 import '../services/location_service.dart';
@@ -19,9 +19,9 @@ class FarmConfigurationScreen extends StatefulWidget {
 class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
   bool _useCurrentLocation = true;
   bool _isLoadingLocation = false;
-  final _farmNameController = TextEditingController(text: 'Green Valley Acres');
-  final _latitudeController = TextEditingController(text: '37.7749');
-  final _longitudeController = TextEditingController(text: '-122.4194');
+  final _farmNameController = TextEditingController(text: 'Farm 1');
+  final _latitudeController = TextEditingController(text: '28.6139');
+  final _longitudeController = TextEditingController(text: '77.2090');
   final _areaController = TextEditingController(text: '50');
   final _nitrogenController = TextEditingController(text: '0.0');
   final _phosphorusController = TextEditingController(text: '0.0');
@@ -34,6 +34,8 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
   final _notesController = TextEditingController();
   String _unit = 'Acres';
 
+  GoogleMapController? _mapController;
+  Set<Marker> _markers = {};
   final LocationService _locationService = LocationService();
 
   @override
@@ -77,15 +79,20 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
       final position = await _locationService.getCurrentPosition();
       if (position != null) {
         setState(() {
-          _latitudeController.text = position.latitude.toString();
-          _longitudeController.text = position.longitude.toString();
+          _latitudeController.text = position.latitude.toStringAsFixed(6);
+          _longitudeController.text = position.longitude.toStringAsFixed(6);
+          _updateMapMarker();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Location updated successfully')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to get current location')),
+          const SnackBar(
+            content: Text(
+              'Unable to get current location. Please check location permissions and GPS.',
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -103,8 +110,10 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
       MaterialPageRoute(
         builder:
             (context) => MapSelectionScreen(
-              initialLatitude: double.tryParse(_latitudeController.text),
-              initialLongitude: double.tryParse(_longitudeController.text),
+              initialLatitude:
+                  double.tryParse(_latitudeController.text) ?? 28.6139,
+              initialLongitude:
+                  double.tryParse(_longitudeController.text) ?? 77.2090,
             ),
       ),
     );
@@ -113,8 +122,23 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
       setState(() {
         _latitudeController.text = result['latitude'].toString();
         _longitudeController.text = result['longitude'].toString();
+        _updateMapMarker();
       });
     }
+  }
+
+  void _updateMapMarker() {
+    final lat = double.tryParse(_latitudeController.text) ?? 28.6139;
+    final lng = double.tryParse(_longitudeController.text) ?? 77.2090;
+    setState(() {
+      _markers = {
+        Marker(
+          markerId: const MarkerId('farm_location'),
+          position: LatLng(lat, lng),
+          infoWindow: const InfoWindow(title: 'Farm Location'),
+        ),
+      };
+    });
   }
 
   Future<void> _saveFarmDetails() async {
@@ -183,43 +207,21 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(
-                        double.tryParse(_latitudeController.text) ?? 23.0225,
-                        double.tryParse(_longitudeController.text) ?? 72.5714,
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        double.tryParse(_latitudeController.text) ?? 28.6139,
+                        double.tryParse(_longitudeController.text) ?? 77.2090,
                       ),
-                      initialZoom: 10,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.none,
-                      ),
+                      zoom: 10,
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${dotenv.env['MAPTILER_API_KEY']}',
-                        userAgentPackageName: 'com.example.agrogen',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(
-                              double.tryParse(_latitudeController.text) ??
-                                  23.0225,
-                              double.tryParse(_longitudeController.text) ??
-                                  72.5714,
-                            ),
-                            width: 40,
-                            height: 40,
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                              size: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    markers: _markers,
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller;
+                      _updateMapMarker();
+                    },
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
                   ),
                 ),
               ),
