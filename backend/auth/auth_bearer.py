@@ -1,14 +1,30 @@
+# backend/auth/auth_bearer.py
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from auth.auth_handler import decode_access_token
+from jose import jwt, JWTError
+
+SECRET_KEY = "supersecretkey"  # 🔒 Replace with your real key
+ALGORITHM = "HS256"
 
 class JWTBearer(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super(JWTBearer, self).__init__(auto_error=auto_error)
+
     async def __call__(self, request: Request):
-        credentials: HTTPAuthorizationCredentials = await super().__call__(request)
+        credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if credentials:
-            token = credentials.credentials
-            if not decode_access_token(token):
+            if not credentials.scheme == "Bearer":
+                raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
+            if not self.verify_jwt(credentials.credentials):
                 raise HTTPException(status_code=403, detail="Invalid or expired token.")
-            return token
+            return credentials.credentials
         else:
-            raise HTTPException(status_code=403, detail="Invalid authorization header.")
+            raise HTTPException(status_code=403, detail="Invalid authorization code.")
+
+    def verify_jwt(self, jwtoken: str) -> bool:
+        try:
+            payload = jwt.decode(jwtoken, SECRET_KEY, algorithms=[ALGORITHM])
+            return True
+        except JWTError:
+            return False
+
