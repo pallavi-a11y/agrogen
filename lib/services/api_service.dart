@@ -8,25 +8,35 @@ class ApiService {
 
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
-  // Get stored token
+  // --------------------------
+  // 🔐 TOKEN HANDLING
+  // --------------------------
+
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
   }
 
-  // Store token
   Future<void> _storeToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
   }
 
-  // Remove token (logout)
   Future<void> _removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
   }
 
-  // Generic GET request
+  // --------------------------
+  // 🌍 BASE URL
+  // --------------------------
+
+  Uri _uri(String endpoint) => Uri.parse("${Config.baseUrl}$endpoint");
+
+  // --------------------------
+  // 🧾 GENERIC REQUEST METHODS
+  // --------------------------
+
   Future<Map<String, dynamic>> _get(String endpoint) async {
     final token = await _getToken();
     final headers = {
@@ -34,18 +44,15 @@ class ApiService {
       if (token != null) 'Authorization': 'Bearer $token',
     };
 
-    final response = await _client
-        .get(Uri.parse('${Config.baseUrl}$endpoint'), headers: headers)
-        .timeout(Config.apiTimeout);
+    final response = await _client.get(_uri(endpoint), headers: headers);
 
-    if (response.statusCode == 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to load data: ${response.statusCode}');
+      throw Exception('GET failed: ${response.statusCode} → ${response.body}');
     }
   }
 
-  // Generic POST request
   Future<Map<String, dynamic>> _post(
     String endpoint,
     Map<String, dynamic> data,
@@ -56,22 +63,19 @@ class ApiService {
       if (token != null) 'Authorization': 'Bearer $token',
     };
 
-    final response = await _client
-        .post(
-          Uri.parse('${Config.baseUrl}$endpoint'),
-          headers: headers,
-          body: json.encode(data),
-        )
-        .timeout(Config.apiTimeout);
+    final response = await _client.post(
+      _uri(endpoint),
+      headers: headers,
+      body: json.encode(data),
+    );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to post data: ${response.statusCode}');
+      throw Exception('POST failed: ${response.statusCode} → ${response.body}');
     }
   }
 
-  // Generic PUT request
   Future<Map<String, dynamic>> _put(
     String endpoint,
     Map<String, dynamic> data,
@@ -82,22 +86,41 @@ class ApiService {
       if (token != null) 'Authorization': 'Bearer $token',
     };
 
-    final response = await _client
-        .put(
-          Uri.parse('${Config.baseUrl}$endpoint'),
-          headers: headers,
-          body: json.encode(data),
-        )
-        .timeout(Config.apiTimeout);
+    final response = await _client.put(
+      _uri(endpoint),
+      headers: headers,
+      body: json.encode(data),
+    );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to update data: ${response.statusCode}');
+      throw Exception('PUT failed: ${response.statusCode} → ${response.body}');
     }
   }
 
-  // Authentication methods
+  Future<Map<String, dynamic>> _delete(String endpoint) async {
+    final token = await _getToken();
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await _client.delete(_uri(endpoint), headers: headers);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    } else {
+      throw Exception(
+        'DELETE failed: ${response.statusCode} → ${response.body}',
+      );
+    }
+  }
+
+  // --------------------------
+  // 👤 AUTHENTICATION
+  // --------------------------
+
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await _post(Config.loginEndpoint, {
       'email': email,
@@ -121,7 +144,6 @@ class ApiService {
       'email': email,
       'password': password,
     });
-
     return response;
   }
 
@@ -138,16 +160,17 @@ class ApiService {
     return response;
   }
 
-  Future<void> logout() async {
-    await _removeToken();
-  }
+  Future<void> logout() async => await _removeToken();
 
-  // Data fetching methods
+  // --------------------------
+  // 🌦️ FARM DATA & DASHBOARD
+  // --------------------------
+
   Future<Map<String, dynamic>> fetchWeather(
     double latitude,
     double longitude,
   ) async {
-    return await _get('${Config.weatherEndpoint}?lat=$latitude&lon=$longitude');
+    return await _get("${Config.weatherEndpoint}?lat=$latitude&lon=$longitude");
   }
 
   Future<List<Map<String, dynamic>>> fetchCropSuggestions() async {
@@ -172,26 +195,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> removeCrop(String cropId) async {
-    return await _delete('${Config.removeCropEndpoint}/$cropId');
-  }
-
-  // Generic DELETE request
-  Future<Map<String, dynamic>> _delete(String endpoint) async {
-    final token = await _getToken();
-    final headers = {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-
-    final response = await _client
-        .delete(Uri.parse('${Config.baseUrl}$endpoint'), headers: headers)
-        .timeout(Config.apiTimeout);
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to delete data: ${response.statusCode}');
-    }
+    return await _delete("${Config.removeCropEndpoint}/$cropId");
   }
 
   Future<List<Map<String, dynamic>>> fetchMarketPrices() async {
@@ -223,13 +227,14 @@ class ApiService {
     return await _put(Config.profileEndpoint, profile);
   }
 
-  // Check if user is authenticated
+  // --------------------------
+  // ✅ AUTH STATUS
+  // --------------------------
+
   Future<bool> isAuthenticated() async {
     final token = await _getToken();
     return token != null && token.isNotEmpty;
   }
 
-  void dispose() {
-    _client.close();
-  }
+  void dispose() => _client.close();
 }
