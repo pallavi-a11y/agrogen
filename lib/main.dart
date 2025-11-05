@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'app_state.dart';
@@ -17,8 +18,9 @@ import 'screens/profile_screen.dart';
 import 'screens/market_prices_screen.dart';
 import 'screens/disease_detection_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   final appState = AppState();
   await appState.initializeApp();
   runApp(MyApp(appState: appState));

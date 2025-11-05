@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../theme.dart';
 
 class MapSelectionScreen extends StatefulWidget {
@@ -17,13 +19,14 @@ class MapSelectionScreen extends StatefulWidget {
 }
 
 class _MapSelectionScreenState extends State<MapSelectionScreen> {
-  late GoogleMapController _mapController;
+  late MapController _mapController;
   LatLng? _selectedLocation;
-  Set<Marker> _markers = {};
+  List<Marker> _markers = [];
 
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
     if (widget.initialLatitude != null && widget.initialLongitude != null) {
       _selectedLocation = LatLng(
         widget.initialLatitude!,
@@ -31,9 +34,10 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
       );
       _markers.add(
         Marker(
-          markerId: const MarkerId('selected_location'),
-          position: _selectedLocation!,
-          infoWindow: const InfoWindow(title: 'Selected Location'),
+          point: _selectedLocation!,
+          width: 40,
+          height: 40,
+          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
         ),
       );
     }
@@ -45,9 +49,10 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
       _markers.clear();
       _markers.add(
         Marker(
-          markerId: const MarkerId('selected_location'),
-          position: position,
-          infoWindow: const InfoWindow(title: 'Selected Location'),
+          point: position,
+          width: 40,
+          height: 40,
+          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
         ),
       );
     });
@@ -74,18 +79,21 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
             ),
         ],
       ),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: _selectedLocation ?? const LatLng(37.7749, -122.4194),
-          zoom: 10,
+      body: FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          initialCenter: _selectedLocation ?? const LatLng(37.7749, -122.4194),
+          initialZoom: 10,
+          onTap: (tapPosition, point) => _onMapTapped(point),
         ),
-        onMapCreated: (controller) {
-          _mapController = controller;
-        },
-        onTap: _onMapTapped,
-        markers: _markers,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
+        children: [
+          TileLayer(
+            urlTemplate:
+                'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${dotenv.env['MAPTILER_API_KEY']}',
+            userAgentPackageName: 'com.example.agrogen',
+          ),
+          MarkerLayer(markers: _markers),
+        ],
       ),
       floatingActionButton:
           _selectedLocation != null

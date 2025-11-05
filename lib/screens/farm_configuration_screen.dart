@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../theme.dart';
 import '../app_state.dart';
 import '../services/location_service.dart';
@@ -175,11 +178,49 @@ class _FarmConfigurationScreenState extends State<FarmConfigurationScreen> {
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: const Center(
-                  child: Icon(Icons.map, size: 80, color: Colors.grey),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(
+                        double.tryParse(_latitudeController.text) ?? 23.0225,
+                        double.tryParse(_longitudeController.text) ?? 72.5714,
+                      ),
+                      initialZoom: 10,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${dotenv.env['MAPTILER_API_KEY']}',
+                        userAgentPackageName: 'com.example.agrogen',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              double.tryParse(_latitudeController.text) ??
+                                  23.0225,
+                              double.tryParse(_longitudeController.text) ??
+                                  72.5714,
+                            ),
+                            width: 40,
+                            height: 40,
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
